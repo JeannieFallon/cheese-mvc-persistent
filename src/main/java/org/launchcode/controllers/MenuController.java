@@ -17,7 +17,7 @@ import javax.validation.Valid;
  * Created by jeannie on 4/29/17.
  */
 @Controller
-@RequestMapping("menu")
+@RequestMapping(value = "menu")
 public class MenuController {
 
     @Autowired
@@ -42,48 +42,57 @@ public class MenuController {
 
     @RequestMapping(value = "add", method = RequestMethod.POST)
     public String add(@ModelAttribute @Valid Menu menu, Errors errors,
-                      @RequestParam int id, Model model) {
+                      Model model) {
         if(errors.hasErrors()){
             model.addAttribute("title", "Add Menu");
             return"menu/add";
         }
+
         menuDao.save(menu);
+
         return "redirect:view/" + menu.getId();
     }
 
-    // What is the syntax for including variable in the RequestMapping value?
-    @RequestMapping(value = "view", method = RequestMethod.GET)
+    @RequestMapping(value = "view/{id}", method = RequestMethod.GET)
     public String viewMenu(@PathVariable int id, Model model) {
+
         Menu menu = menuDao.findOne(id);
+
         model.addAttribute("title", menu.getName());
-        model.addAttribute("menu", menu);
+        model.addAttribute("cheeses", menu.getCheeses());
+        model.addAttribute("menuId", menu.getId());
+
         return "menu/view";
+
     }
 
-    @RequestMapping(value = "add-item/", method = RequestMethod.GET)
+    @RequestMapping(value = "add-item/{id}", method = RequestMethod.GET)
     public String addItem(@PathVariable int id, Model model) {
+
         Menu menu = menuDao.findOne(id);
-        AddMenuItemForm addMenuItemForm = new AddMenuItemForm(menu, menu.getCheeses());
-        model.addAttribute("form", addMenuItemForm);
+
+        AddMenuItemForm form = new AddMenuItemForm(menu, cheeseDao.findAll());
+
         model.addAttribute("title", "Add item to menu: " + menu.getName());
+        model.addAttribute("form", form);
+
         return "menu/add-item";
     }
 
     @RequestMapping(value = "add-item", method = RequestMethod.POST)
-    public String addItem(@ModelAttribute @Valid AddMenuItemForm addMenuItemForm,
-                          int menuId, Errors errors, Model model){
+    public String addItem(@ModelAttribute @Valid AddMenuItemForm form,
+                          Errors errors, Model model){
         if(errors.hasErrors()){
-            model.addAttribute("title", "Add item to menu: " + menuDao.findOne(menuId));
-            model.addAttribute("form", addMenuItemForm);
+            model.addAttribute("form", form);
             return "menu/add-item";
         }
 
-        Cheese cheese = cheeseDao.findOne(addMenuItemForm.getCheeseId());
-        Menu menu = menuDao.findOne(addMenuItemForm.getMenuId());
+        Cheese cheese = cheeseDao.findOne(form.getCheeseId());
+        Menu menu = menuDao.findOne(form.getMenuId());
         menu.addItem(cheese);
         menuDao.save(menu);
 
-        return "redirect:view/" + menu.getId();
+        return "redirect:/menu/view/" + menu.getId();
     }
 
 
