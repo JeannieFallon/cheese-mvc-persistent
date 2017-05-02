@@ -30,13 +30,11 @@ public class Menu {
     public Menu() {
     }
 
-    public Menu(String name) {
-        this.name = name;
-    }
-
     public void addItem(Cheese item) {
         cheeses.add(item);
     }
+
+    public int getId() { return id; }
 
     public String getName() {
         return name;
@@ -44,14 +42,6 @@ public class Menu {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public List<Cheese> getCheeses() {
